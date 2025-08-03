@@ -1,0 +1,20 @@
+(set-logic QF_NIA)
+(declare-const target Int) ; Target Blood Glucose
+(declare-const bg Int) ; Current Blood Glucose
+(declare-const eventual-bg Int) ; Eventual Blood Glucose
+(declare-const isf Int) ; Insulin Sensitivity Factor
+(declare-const iob Int) ; Insulin On Board
+
+; The eventual BG equation
+(assert (= eventual-bg (- bg (* isf iob))))
+
+; Add constraints
+(assert (> eventual-bg target))
+(assert (< bg target))
+(assert (> bg 0))
+(assert (> isf 0))
+(assert (> iob 0))
+(assert (> target 0))
+
+; Check satisfiability
+(check-sat)

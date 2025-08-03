@@ -1,0 +1,31 @@
+digraph EFSM {
+  node [shape=ellipse, fontname="Arial"];
+
+  // States
+  idle [shape="point"];
+  read_cgm [label="read_cgm"];
+  query_pump [label="query_basal"];
+  compute_basal [label="compute_basal"];
+  cancel_temp_basal [label="cancel_basal"];
+  update_temp_basal [label="update_basal"];
+  confirm_ack [label="confirm_ack"];
+  query_recent_activity [label="verify_activity"];
+
+  // Transitions
+  idle -> read_cgm;
+  read_cgm -> read_cgm [label="[BG_unavailable]: retry"]
+  read_cgm -> query_pump [label="[BG_available]: BG=read_CGM()"];
+  query_pump -> query_pump [label="[query==unsuccessful]"];
+  query_pump -> compute_basal [label="[query==successful]: \ncurrent_basal = query_pump()"];
+
+  compute_basal -> cancel_temp_basal [label="[updated_basal<0]: \nupdated_basal = compute_updated_basal(BG, current_basal)"];
+  compute_basal -> update_temp_basal [label="[updated_basal!=current_basal]: \nupdated_basal = compute_updated_basal(BG, current_basal)"];
+  compute_basal -> confirm_ack [label="[updated_basal==current_basal]: \nupdated_basal = compute_updated_basal(BG, current_basal)"];
+  cancel_temp_basal -> confirm_ack [label="[cancellation_issued]"];
+  update_temp_basal -> confirm_ack [label="[update_issued]"];
+
+  confirm_ack -> confirm_ack [label="[ack_confirmed==false]: \nretry"]
+  confirm_ack -> query_recent_activity [label="[ack_confirmed==true]"];
+  query_recent_activity -> read_cgm [label="[activity_verified==true]"];
+  query_recent_activity -> query_recent_activity [label="[activity_verified==false]: \nretry"];
+}
